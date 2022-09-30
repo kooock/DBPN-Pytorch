@@ -116,7 +116,7 @@ if cuda:
 
 print('===> Loading datasets')
 train_set = get_training_set(opt.data_dir, opt.hr_train_dataset, opt.upscale_factor, opt.patch_size, opt.data_augmentation)
-test_set = get_training_set(opt.data_dir, opt.hr_val_dataset, opt.upscale_factor, opt.patch_size, False)
+test_set = get_training_set(opt.data_dir, opt.hr_val_dataset, opt.upscale_factor, patch_size=64, False)
 training_data_loader = DataLoader(dataset=train_set, num_workers=opt.threads, batch_size=opt.batchSize, shuffle=True)
 testing_data_loader = DataLoader(dataset=test_set, num_workers=opt.threads, batch_size=opt.batchSize, shuffle=True)
 
