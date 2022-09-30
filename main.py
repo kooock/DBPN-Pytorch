@@ -24,6 +24,7 @@ parser.add_argument('--upscale_factor', type=int, default=8, help="super resolut
 parser.add_argument('--batchSize', type=int, default=1, help='training batch size')
 parser.add_argument('--nEpochs', type=int, default=2000, help='number of epochs to train for')
 parser.add_argument('--snapshots', type=int, default=50, help='Snapshots')
+parser.add_argument('--test-iters', type=int, default=1, help='test frequency')
 parser.add_argument('--start_iter', type=int, default=1, help='Starting Epoch')
 parser.add_argument('--lr', type=float, default=1e-4, help='Learning Rate. Default=0.01')
 parser.add_argument('--gpu_mode', type=bool, default=True)
@@ -32,7 +33,9 @@ parser.add_argument('--seed', type=int, default=123, help='random seed to use. D
 parser.add_argument('--gpus', default=1, type=int, help='number of gpu')
 parser.add_argument('--data_dir', type=str, default='./Dataset')
 parser.add_argument('--data_augmentation', type=bool, default=True)
+parser.add_argument('--dataset_name', type=str, default='DIV2K')
 parser.add_argument('--hr_train_dataset', type=str, default='DIV2K_train_HR')
+parser.add_argument('--hr_val_dataset', type=str, default='DIV2K_val_HR')
 parser.add_argument('--model_type', type=str, default='DBPNLL')
 parser.add_argument('--residual', type=bool, default=True)
 parser.add_argument('--patch_size', type=int, default=40, help='Size of cropped HR image')
@@ -97,7 +100,7 @@ def print_network(net):
     print('Total number of parameters: %d' % num_params)
 
 def checkpoint(epoch):
-    model_out_path = opt.save_folder+opt.train_dataset+hostname+opt.model_type+opt.prefix+"_epoch_{}.pth".format(epoch)
+    model_out_path = os.path.join(opt.save_folder,f"{opt.dataset_name}-{opt.model_type}-{opt.prefix}_epoch_{epoch}.pth")
     torch.save(model.state_dict(), model_out_path)
     print("Checkpoint saved to {}".format(model_out_path))
 
@@ -111,7 +114,9 @@ if cuda:
 
 print('===> Loading datasets')
 train_set = get_training_set(opt.data_dir, opt.hr_train_dataset, opt.upscale_factor, opt.patch_size, opt.data_augmentation)
+test_set = get_training_set(opt.data_dir, opt.hr_val_dataset, opt.upscale_factor, opt.patch_size, False)
 training_data_loader = DataLoader(dataset=train_set, num_workers=opt.threads, batch_size=opt.batchSize, shuffle=True)
+testing_data_loader = DataLoader(dataset=test_set, num_workers=opt.threads, batch_size=opt.batchSize, shuffle=True)
 
 print('===> Building model ', opt.model_type)
 if opt.model_type == 'DBPNLL':
@@ -149,6 +154,8 @@ for epoch in range(opt.start_iter, opt.nEpochs + 1):
         for param_group in optimizer.param_groups:
             param_group['lr'] /= 10.0
         print('Learning rate decay: lr={}'.format(optimizer.param_groups[0]['lr']))
-            
+    if (epoch+1) % (opt.test-iters) == 0:
+        test()
     if (epoch+1) % (opt.snapshots) == 0:
         checkpoint(epoch)
+    
