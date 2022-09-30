@@ -129,7 +129,7 @@ else:
     model = DBPN(num_channels=3, base_filter=64,  feat = 256, num_stages=7, scale_factor=opt.upscale_factor) 
     
 model = torch.nn.DataParallel(model, device_ids=gpus_list)
-criterion = nn.L1Loss()
+criterion = nn.MSELoss()
 
 print('---------- Networks architecture -------------')
 print_network(model)
