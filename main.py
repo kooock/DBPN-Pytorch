@@ -23,8 +23,9 @@ parser = argparse.ArgumentParser(description='PyTorch Super Res Example')
 parser.add_argument('--upscale_factor', type=int, default=8, help="super resolution upscale factor")
 parser.add_argument('--batchSize', type=int, default=1, help='training batch size')
 parser.add_argument('--nEpochs', type=int, default=2000, help='number of epochs to train for')
+parser.add_argument('--nLogging', type=int, default=100, help='number of logging to train for')
 parser.add_argument('--snapshots', type=int, default=50, help='Snapshots')
-parser.add_argument('--test-iters', type=int, default=1, help='test frequency')
+parser.add_argument('--test_iters', type=int, default=1, help='test frequency')
 parser.add_argument('--start_iter', type=int, default=1, help='Starting Epoch')
 parser.add_argument('--lr', type=float, default=1e-4, help='Learning Rate. Default=0.01')
 parser.add_argument('--gpu_mode', type=bool, default=True)
@@ -73,7 +74,8 @@ def train(epoch):
         loss.backward()
         optimizer.step()
 
-        print("===> Epoch[{}]({}/{}): Loss: {:.4f} || Timer: {:.4f} sec.".format(epoch, iteration, len(training_data_loader), loss.data, (t1 - t0)))
+        if (iteration+1) % (opt.nLogging) == 0:
+            print("===> Epoch[{}]({}/{}): Loss: {:.4f} || Timer: {:.4f} sec.".format(epoch, iteration, len(training_data_loader), loss.data, (t1 - t0)))
 
     print("===> Epoch {} Complete: Avg. Loss: {:.4f}".format(epoch, epoch_loss / len(training_data_loader)))
 
@@ -154,7 +156,7 @@ for epoch in range(opt.start_iter, opt.nEpochs + 1):
         for param_group in optimizer.param_groups:
             param_group['lr'] /= 10.0
         print('Learning rate decay: lr={}'.format(optimizer.param_groups[0]['lr']))
-    if (epoch+1) % (opt.test-iters) == 0:
+    if (epoch+1) % (opt.test_iters) == 0:
         test()
     if (epoch+1) % (opt.snapshots) == 0:
         checkpoint(epoch)
