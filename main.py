@@ -84,9 +84,6 @@ def test():
     avg_psnr = 0
     for batch in testing_data_loader:
         input, target = Variable(batch[0]), Variable(batch[1])
-        if cuda:
-            input = input.cuda(gpus_list[0])
-            target = target.cuda(gpus_list[0])
 
         prediction = model(input)
         mse = criterion(prediction, target)
