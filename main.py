@@ -87,6 +87,8 @@ def test():
         if cuda:
             input = input.cuda(gpus_list[0])
             target = target.cuda(gpus_list[0])
+        if opt.residual:
+            prediction = prediction + bicubic
 
         prediction = model(input)
         mse = criterion(prediction, target)
