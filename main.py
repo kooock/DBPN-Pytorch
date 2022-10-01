@@ -82,15 +82,18 @@ def train(epoch):
 
 def test():
     avg_psnr = 0
-    for batch in testing_data_loader:
-        input, target = Variable(batch[0]), Variable(batch[1])
+    for iteration, batch in enumerate(testing_data_loader, 1):
+        input, target, bicubic = Variable(batch[0]), Variable(batch[1]), Variable(batch[2])
         if cuda:
             input = input.cuda(gpus_list[0])
             target = target.cuda(gpus_list[0])
+            bicubic = bicubic.cuda(gpus_list[0])
+
+        prediction = model(input)
+
         if opt.residual:
             prediction = prediction + bicubic
 
-        prediction = model(input)
         mse = criterion(prediction, target)
         psnr = 10 * log10(1 / mse.data.item())
         avg_psnr += psnr
